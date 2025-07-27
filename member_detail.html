@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>メンバー生写真一覧 | 櫻坂46交換サイト</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: #fff0f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #c81d5f;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 40px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f7c6d9;
+      color: #333;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fff5f8;
+    }
+
+    button {
+      background-color: #ff69b4;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #e055a0;
+    }
+  </style>
+</head>
+<body>
+
+<h1 id="member-title">メンバーの生写真一覧</h1>
+
+<table id="photo-table">
+  <thead>
+    <tr>
+      <th>メンバー名</th>
+      <th>品名</th>
+      <th>ポーズ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- データがここに挿入される -->
+  </tbody>
+</table>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const memberName = params.get("member") || "不明なメンバー";
+  document.getElementById("member-title").textContent = memberName + " の生写真一覧";
+
+  // 公開CSVのURL
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlzvol_R6xCywPy7wzFL-aOGSBqYYm_--3QnivCkYWR7sVdeS85bxz5pfB309dl1xwmoMEMHreKa9W/pub?output=csv";
+
+
+  fetch(csvUrl)
+    .then(response => response.text())
+    .then(text => {
+      // ダブルクオートCSV対応の分割処理
+      const rows = text.trim().split("\n").map(line => {
+        return line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g).map(cell => cell.replace(/^"|"$/g, ""));
+      });
+
+      const data = rows.slice(1); // ヘッダー除外
+      const tbody = document.querySelector("#photo-table tbody");
+
+      // 比較の際に空白や全角スペースを除去
+      const normalize = str => str.replace(/\s+/g, "").replace(/　/g, "");
+
+      const filtered = data.filter(row => normalize(row[0]) === normalize(memberName));
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3">該当データがありません</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(([member, item, pose]) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${member}</td>
+          <td>${item}</td>
+          <td>${pose}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    })
+    .catch(error => {
+      console.error("CSV読み込みエラー:", error);
+      const tbody = document.querySelector("#photo-table tbody");
+      tbody.innerHTML = `<tr><td colspan="3">データの読み込みに失敗しました</td></tr>`;
+    });
+</script>
+
+</body>
+</html>
