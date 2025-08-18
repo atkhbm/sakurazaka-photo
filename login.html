@@ -5,19 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ログイン | 櫻坂46 生写真交換サイト</title>
   <style>
-    body { font-family: 'Helvetica Neue', sans-serif; background:#f9f9fb; margin:0; }
+    body { font-family: 'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', sans-serif; background:#f9f9fb; margin:0; color:#333; }
     header { background:#fff; display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #ddd; }
     header h1 { margin:0; font-size:1.2rem; color:#c81d5f; }
     nav a { margin-left: 16px; text-decoration:none; color:#555; font-weight:bold; }
+    nav a:hover { color:#c81d5f; }
     .wrap { max-width: 480px; margin: 32px auto; background:#fff; padding: 24px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.06); }
     h2 { margin-top:0; color:#333; }
-    label { display:block; margin:12px 0 6px; color:#333; font-weight:bold; }
+    label { display:block; margin:12px 0 6px; font-weight:bold; }
     input { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:16px; }
-    .actions { margin-top:18px; display:flex; gap:12px; }
+    .actions { margin-top:18px; display:flex; gap:12px; flex-wrap:wrap; }
     button, .link-btn { background:#c81d5f; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:bold; text-decoration:none; display:inline-block; }
     button:hover, .link-btn:hover { background:#a9134a; }
-    .sub { margin-top:12px; font-size:.9rem; color:#555; }
     .error { margin-top:12px; color:#c0392b; font-weight:bold; }
+    .sub { margin-top:12px; font-size:.9rem; color:#555; }
   </style>
 </head>
 <body>
@@ -30,40 +31,58 @@
     <h2>ログイン</h2>
     <form id="login-form">
       <label for="email">メールアドレス</label>
-      <input id="email" type="email" required placeholder="you@example.com" autocomplete="username" />
+      <input id="email" type="email" required autocomplete="username" placeholder="you@example.com" />
 
       <label for="password">パスワード</label>
-      <input id="password" type="password" required minlength="8" placeholder="8文字以上" autocomplete="current-password" />
+      <input id="password" type="password" required minlength="8" autocomplete="current-password" />
 
       <div class="actions">
         <button type="submit">ログイン</button>
         <a class="link-btn" href="signup.html">新規登録へ</a>
       </div>
+
       <div id="error" class="error" aria-live="polite"></div>
       <p class="sub">ゲストで試す方は <a href="guest_home.html">こちら</a></p>
     </form>
   </div>
 
-  <!-- 共通認証ロジック -->
+  <!-- 認証ロジック -->
   <script src="auth.js"></script>
   <script>
-    renderHeaderAuthLinks();
+    // ヘッダー出し分け
+    if (typeof renderHeaderAuthLinks === "function") renderHeaderAuthLinks();
+
+    // ?next= でログイン後の遷移先を上書き可能（例：login.html?next=guest_home.html）
+    function getNextPath(defaultPath = "mypage.html") {
+      const p = new URLSearchParams(location.search).get("next");
+      if (!p) return defaultPath;
+      if (/^\/[A-Za-z0-9/_\-.]+$/.test(p) || /^[A-Za-z0-9/_\-.]+$/.test(p)) return p;
+      return defaultPath;
+    }
 
     const form = document.getElementById("login-form");
+    const emailEl = document.getElementById("email");
+    const pwEl = document.getElementById("password");
     const errEl = document.getElementById("error");
+    let submitting = false;
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (submitting) return;
+      submitting = true;
       errEl.textContent = "";
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+
+      const btn = form.querySelector('button[type="submit"]');
+      const original = btn.textContent;
+      btn.disabled = true; btn.textContent = "ログイン中…";
 
       try {
-        await signIn({ email, password });
-        // ログイン後の遷移先：マイページ（仮）
-        location.href = "mypage.html";
+        await signIn({ email: emailEl.value.trim(), password: pwEl.value });
+        location.href = getNextPath("mypage.html");
       } catch (err) {
-        errEl.textContent = err.message || "ログインに失敗しました。";
+        errEl.textContent = err?.message || "ログインに失敗しました。";
+        btn.disabled = false; btn.textContent = original;
+        submitting = false;
       }
     });
   </script>
