@@ -16,6 +16,20 @@
     tr:nth-child(even) { background-color: #fff5f8; }
     .actions { text-align: center; margin: 20px; }
     .actions button { padding: 10px 15px; margin: 0 10px; background-color: #ff69b4; color: white; border: none; border-radius: 5px; cursor: pointer; }
+
+    /* 戻るボタン用 */
+    .back-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #c81d5f;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .back-btn:hover {
+      background-color: #a8154a;
+    }
   </style>
 </head>
 <body>
@@ -47,6 +61,11 @@
   <div class="actions">
     <button onclick="saveData()">保存</button>
     <button onclick="resetData()">リセット</button>
+  </div>
+
+  <!-- マイページに戻るボタン -->
+  <div style="text-align:center; margin: 40px 0;">
+    <a href="mypage.html" class="back-btn">マイページに戻る</a>
   </div>
 
 <script>
