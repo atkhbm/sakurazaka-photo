@@ -1,74 +1,7 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>品名一覧 | 櫻坂46交換サイト</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: 'Helvetica Neue', sans-serif;
-      background-color: #fff0f5;
-      margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
-      color: #c81d5f;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    ul {
-      max-width: 800px;
-      margin: auto;
-      padding: 0;
-      list-style: none;
-    }
-
-    li {
-      background-color: white;
-      margin: 10px 0;
-      padding: 15px 20px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      transition: background-color 0.2s;
-    }
-
-    li:hover {
-      background-color: #ffe0ec;
-    }
-
-    a {
-      text-decoration: none;
-      color: #c81d5f;
-      font-weight: bold;
-      font-size: 1.1em;
-      display: block;
-    }
-
-    footer {
-      text-align: center;
-      font-size: 0.9em;
-      color: #888;
-      padding: 20px;
-    }
-  </style>
-</head>
-<body>
-
-<h1>全品名一覧</h1>
-
-<ul id="title-list">
-  <!-- 品名リストがここに入る -->
-</ul>
-
-<footer>
-  &copy; 2025 Sakurazaka46 Photo Trade Project（非公式）
-</footer>
+<ul id="title-list"></ul>
 
 <script>
-  const csvUrl = "https://raw.githubusercontent.com/atkhbm/sakurazaka-photo/main/master.csv";
+  const csvUrl = "https://raw.githubusercontent.com/atkhbm/sakurazaka-photo/refs/heads/main/sakurazaka_master_full.csv";
 
   fetch(csvUrl)
     .then(response => response.text())
@@ -77,35 +10,31 @@
         line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g).map(cell => cell.replace(/^"|"$/g, ""))
       );
 
-      const data = rows.slice(1); // ヘッダー除く
-      const items = new Set();
+      const data = rows.slice(1); // ヘッダー除去
+      const titleSet = new Set();
 
       data.forEach(row => {
-        const title = row[1]?.trim();
-        if (title) items.add(title);
+        const title = row[1]; // 品名は2列目
+        if (title) titleSet.add(title.trim());
       });
 
-      const list = document.getElementById("title-list");
-
-      if (items.size === 0) {
-        list.innerHTML = "<li>品名データが見つかりませんでした。</li>";
+      const titleList = document.getElementById("title-list");
+      if (titleSet.size === 0) {
+        titleList.innerHTML = "<li>品名が見つかりませんでした。</li>";
         return;
       }
 
-      [...items].sort().forEach(title => {
+      [...titleSet].sort().forEach(title => {
         const li = document.createElement("li");
-        const link = document.createElement("a");
-        link.href = `item_detail.html?item=${encodeURIComponent(title)}`;
-        link.textContent = title;
-        li.appendChild(link);
-        list.appendChild(li);
+        const a = document.createElement("a");
+        a.href = `item_detail.html?item=${encodeURIComponent(title)}`;
+        a.textContent = title;
+        li.appendChild(a);
+        titleList.appendChild(li);
       });
     })
-    .catch(error => {
-      console.error("CSV読み込みエラー:", error);
+    .catch(err => {
+      console.error("CSV読み込みエラー:", err);
       document.getElementById("title-list").innerHTML = "<li>データの読み込みに失敗しました。</li>";
     });
 </script>
-
-</body>
-</html>

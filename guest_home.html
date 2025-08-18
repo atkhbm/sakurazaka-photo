@@ -2,114 +2,86 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>櫻坂46生写真交換掲示板</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <title>ゲストホーム | 櫻坂46生写真交換</title>
   <style>
     body {
-      margin: 0;
-      font-family: 'Noto Sans JP', sans-serif;
+      font-family: 'Helvetica Neue', sans-serif;
       background-color: #fff0f5;
-      color: #333;
-    }
-
-    header {
-      background-color: #f7c6d9;
+      margin: 0;
       padding: 20px;
       text-align: center;
-      color: #fff;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 2rem;
+    h1 {
+      color: #c81d5f;
+      margin-bottom: 30px;
     }
 
-    .container {
-      padding: 20px;
+    .card-container {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 20px;
+      gap: 30px;
     }
 
     .card {
-      background: #fff;
-      border-radius: 12px;
+      background-color: white;
+      border-radius: 15px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       width: 280px;
-      padding: 20px;
+      padding: 25px;
       text-align: center;
       transition: transform 0.2s;
     }
 
     .card:hover {
       transform: translateY(-5px);
-    }
-
-    .card img {
-      width: 80px;
-      height: 80px;
-      margin-bottom: 10px;
+      background-color: #ffe3ec;
     }
 
     .card h2 {
-      margin: 10px 0;
-      font-size: 1.2rem;
-      color: #d46a92;
+      color: #c81d5f;
+      margin-bottom: 15px;
     }
 
-    footer {
-      text-align: center;
-      padding: 10px;
-      font-size: 0.9rem;
-      color: #888;
+    .card p {
+      font-size: 0.95em;
+      color: #555;
     }
 
-    @media (max-width: 600px) {
-      .container {
-        flex-direction: column;
-        align-items: center;
-      }
+    .card a {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #ff69b4;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    .card a:hover {
+      background-color: #e055a0;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>櫻坂46 生写真交換掲示板</h1>
-</header>
+  <h1>ようこそ！ゲストモードで利用開始</h1>
 
-<div class="container">
+  <div class="card-container">
+    <div class="card">
+      <h2>🔧 マイリストを管理</h2>
+      <p>提供・希望・所持している生写真を編集できます。</p>
+      <a href="mylist_manage.html">リストを編集</a>
+    </div>
 
-  <div class="card">
-    <img src="https://cdn-icons-png.flaticon.com/512/709/709496.png" alt="出品一覧アイコン">
-    <h2>自分の出品を見る</h2>
-    <p>あなたの提供できる生写真リストを管理できます。</p>
+    <div class="card">
+      <h2>🔍 生写真を探す</h2>
+      <p>品名やメンバー別に検索、マッチング機能も利用可能。</p>
+      <a href="search_home.html">写真を探す</a>
+    </div>
   </div>
-
-  <a href="search.html" style="text-decoration: none;">
-  <div class="card">
-    <img src="https://cdn-icons-png.flaticon.com/512/622/622669.png" alt="検索アイコン">
-    <h2>欲しい生写真を探す</h2>
-    <p>推しメンやポーズで欲しい写真を検索しましょう。</p>
-  </div>
-</a>
-
-  <div class="card">
-    <img src="https://cdn-icons-png.flaticon.com/512/1077/1077035.png" alt="マッチングアイコン">
-    <h2>トレード相手とマッチング</h2>
-    <p>条件が一致したトレード候補を表示します。</p>
-  </div>
-
-</div>
-
-<footer>
-  &copy; 2025 Sakurazaka46 Photo Trade Project
-</footer>
 
 </body>
 </html>
-
-
-

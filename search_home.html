@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>櫻坂46生写真交換掲示板</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #fff0f5;
+      color: #333;
+    }
+
+    header {
+      background-color: #f7c6d9;
+      padding: 20px;
+      text-align: center;
+      color: #fff;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .container {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      width: 280px;
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card img {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 10px;
+    }
+
+    .card h2 {
+      margin: 10px 0;
+      font-size: 1.2rem;
+      color: #d46a92;
+    }
+
+    footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>櫻坂46 生写真交換掲示板</h1>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <img src="https://cdn-icons-png.flaticon.com/512/709/709496.png" alt="出品一覧アイコン">
+    <h2>自分の出品を見る</h2>
+    <p>あなたの提供できる生写真リストを管理できます。</p>
+  </div>
+
+  <a href="search.html" style="text-decoration: none;">
+  <div class="card">
+    <img src="https://cdn-icons-png.flaticon.com/512/622/622669.png" alt="検索アイコン">
+    <h2>欲しい生写真を探す</h2>
+    <p>推しメンやポーズで欲しい写真を検索しましょう。</p>
+  </div>
+</a>
+
+  <div class="card">
+    <img src="https://cdn-icons-png.flaticon.com/512/1077/1077035.png" alt="マッチングアイコン">
+    <h2>トレード相手とマッチング</h2>
+    <p>条件が一致したトレード候補を表示します。</p>
+  </div>
+
+</div>
+
+<footer>
+  &copy; 2025 Sakurazaka46 Photo Trade Project
+</footer>
+
+</body>
+</html>
+
+
+

@@ -1,19 +1,18 @@
-
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>櫻坂46 生写真交換サイト（非公式）</title>
+  <meta name="description" content="櫻坂46の生写真をファン同士でスムーズに交換する非公式サイトです。ゲストでも機能を体験できます。" />
   <style>
     body {
-      font-family: 'Helvetica Neue', sans-serif;
+      font-family: 'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', sans-serif;
       background: #f9f9fb;
       margin: 0;
       padding: 0;
+      color: #333;
     }
-
     header {
       background: #fff;
       display: flex;
@@ -22,20 +21,18 @@
       padding: 20px;
       border-bottom: 1px solid #ddd;
     }
-
     header h1 {
       margin: 0;
       font-size: 1.5em;
       color: #c81d5f;
     }
-
     nav a {
       margin-left: 20px;
       text-decoration: none;
       color: #555;
       font-weight: bold;
     }
-
+    nav a:hover { color: #c81d5f; }
     .main-visual {
       display: flex;
       flex-direction: column;
@@ -43,42 +40,37 @@
       padding: 40px 20px;
       text-align: center;
     }
-
     .main-visual img {
       max-width: 100%;
       height: auto;
       border-radius: 12px;
       margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
     }
-
     .main-visual h2 {
       font-size: 1.8em;
       margin-bottom: 10px;
       color: #333;
     }
-
     .main-visual p {
       color: #666;
-      max-width: 600px;
-      line-height: 1.6;
+      max-width: 640px;
+      line-height: 1.8;
+      margin: 0 auto;
     }
-
     .start-btn {
       display: inline-block;
-      margin-top: 30px;
+      margin-top: 28px;
       background: #c81d5f;
-      color: white;
+      color: #fff;
       padding: 12px 24px;
       border-radius: 30px;
       font-size: 1.1em;
       text-decoration: none;
-      transition: background 0.3s;
+      transition: background 0.2s ease, transform 0.05s ease;
     }
-
-    .start-btn:hover {
-      background: #a9134a;
-    }
-
+    .start-btn:hover { background: #a9134a; }
+    .start-btn:active { transform: translateY(1px); }
     footer {
       background: #f0f0f0;
       padding: 20px;
@@ -91,26 +83,28 @@
 <body>
   <header>
     <h1>櫻坂46 生写真交換サイト</h1>
-    <nav>
-     <a href="login.html">ログイン</a>
-     <a href="signup.html">新規登録</a>
-
+    <nav aria-label="グローバルナビゲーション">
+      <a href="login.html">ログイン</a>
+      <a href="signup.html">新規登録</a>
     </nav>
   </header>
 
-  <section class="main-visual">
-    <img src="syalium_back.png" alt="ライブで応援するファンの後ろ姿イラスト">
-    <h2>ファン同士で、もっと楽しく写真交換を。</h2>
-    <p>
-      このサイトは、櫻坂46の生写真をファン同士でスムーズに交換することを目的とした非公式サービスです。<br>
-      公式サイトとは一切関係ありません。<br>
-      ゲストとして機能を体験することも可能です。
-    </p>
-    <a href="guest_home.html" class="start-btn">ゲストで始める</a>
-  </section>
+  <main>
+    <section class="main-visual" aria-labelledby="catchcopy">
+      <!-- 画像ファイルは同じディレクトリに syalium_back.png を置いてください -->
+      <img src="syalium_back.png" alt="ペンライトを掲げる観客のイラスト（ライブの雰囲気）" />
+      <h2 id="catchcopy">ファン同士で、もっと楽しく写真交換を。</h2>
+      <p>
+        このサイトは、櫻坂46の生写真をファン同士でスムーズに交換することを目的とした非公式サービスです。<br />
+        公式サイトとは一切関係ありません。<br />
+        ゲストとして機能を体験することも可能です。
+      </p>
+      <a href="guest_home.html" class="start-btn" aria-label="ゲストで機能を体験する">ゲストで始める</a>
+    </section>
+  </main>
 
   <footer>
-    本サイトは非公式ファンサイトです。櫻坂46運営および公式とは一切関係ありません。<br>
+    本サイトは非公式ファンサイトです。櫻坂46運営および公式とは一切関係ありません。<br />
     トレードは自己責任で行ってください。
   </footer>
 </body>

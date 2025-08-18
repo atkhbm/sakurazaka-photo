@@ -21,7 +21,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 40px;
+      margin-bottom: 20px;
     }
 
     th, td {
@@ -39,16 +39,23 @@
       background-color: #fff5f8;
     }
 
-    button {
+    .button-area {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .btn {
       background-color: #ff69b4;
       color: white;
       border: none;
-      padding: 8px 12px;
+      padding: 10px 20px;
+      margin: 5px;
       border-radius: 5px;
       cursor: pointer;
+      font-size: 1em;
     }
 
-    button:hover {
+    .btn:hover {
       background-color: #e055a0;
     }
   </style>
@@ -63,6 +70,7 @@
       <th>メンバー名</th>
       <th>品名</th>
       <th>ポーズ</th>
+      <th>欲しい</th>
     </tr>
   </thead>
   <tbody>
@@ -70,42 +78,85 @@
   </tbody>
 </table>
 
+<div class="button-area">
+  <button class="btn" onclick="saveSelections()">保存する</button>
+  <button class="btn" onclick="resetMyLists()">リセットする</button>
+</div>
+
 <script>
   const params = new URLSearchParams(window.location.search);
   const memberName = params.get("member") || "不明なメンバー";
   document.getElementById("member-title").textContent = memberName + " の生写真一覧";
 
-  // 公開CSVのURL
-  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlzvol_R6xCywPy7wzFL-aOGSBqYYm_--3QnivCkYWR7sVdeS85bxz5pfB309dl1xwmoMEMHreKa9W/pub?output=csv";
+  const csvUrl = "https://raw.githubusercontent.com/atkhbm/sakurazaka-photo/main/sakurazaka_master_full.csv";
+  const WANT_KEY = "wantedList";
 
+  function getWantedList() {
+    try {
+      return JSON.parse(localStorage.getItem(WANT_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveWantedList(list) {
+    localStorage.setItem(WANT_KEY, JSON.stringify(list));
+  }
+
+  function resetMyLists() {
+    localStorage.removeItem("wishlist");
+    localStorage.removeItem("providelist");
+    localStorage.removeItem("ownedlist");
+    localStorage.removeItem(WANT_KEY);
+    alert("保存されたリストをすべてリセットしました。\nページを再読み込みすると全て再表示されます。");
+    location.reload();
+  }
+
+  function saveSelections() {
+    const checkboxes = document.querySelectorAll("input[type=checkbox][name=want]");
+    const selectedIds = [];
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        selectedIds.push(cb.value);
+      }
+    });
+    saveWantedList(selectedIds);
+    alert("欲しいリストを保存しました。\n次回表示からチェック済みの項目は非表示になります。");
+    location.reload();
+  }
 
   fetch(csvUrl)
     .then(response => response.text())
     .then(text => {
-      // ダブルクオートCSV対応の分割処理
       const rows = text.trim().split("\n").map(line => {
         return line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g).map(cell => cell.replace(/^"|"$/g, ""));
       });
 
-      const data = rows.slice(1); // ヘッダー除外
+      const data = rows.slice(1);
       const tbody = document.querySelector("#photo-table tbody");
+      const normalize = str => (str || "").replace(/\s+/g, "").replace(/　/g, "");
 
-      // 比較の際に空白や全角スペースを除去
-      const normalize = str => str.replace(/\s+/g, "").replace(/　/g, "");
+      const wanted = getWantedList();
 
-      const filtered = data.filter(row => normalize(row[0]) === normalize(memberName));
+      const filtered = data.filter(row => {
+        const [member, item, pose] = row;
+        const id = `${item}_${pose}`;
+        return normalize(row[0]) === normalize(memberName) && !wanted.includes(id);
+      });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3">該当データがありません</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4">該当データがありません（すべて登録済み）</td></tr>`;
         return;
       }
 
       filtered.forEach(([member, item, pose]) => {
         const tr = document.createElement("tr");
+        const id = `${item}_${pose}`;
         tr.innerHTML = `
           <td>${member}</td>
           <td>${item}</td>
           <td>${pose}</td>
+          <td><input type="checkbox" name="want" value="${id}"></td>
         `;
         tbody.appendChild(tr);
       });
@@ -113,9 +164,10 @@
     .catch(error => {
       console.error("CSV読み込みエラー:", error);
       const tbody = document.querySelector("#photo-table tbody");
-      tbody.innerHTML = `<tr><td colspan="3">データの読み込みに失敗しました</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4">データの読み込みに失敗しました</td></tr>`;
     });
 </script>
 
 </body>
 </html>
+
