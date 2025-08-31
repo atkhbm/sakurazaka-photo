@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>マイページ | 櫻坂46 生写真交換サイト</title>
   <style>
-    body { font-family: 'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', sans-serif; background:#f9f9fb; margin:0; color:#333; }
-    header { background:#fff; display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #ddd; }
-    header h1 { margin:0; font-size:1.2rem; color:#c81d5f; }
-    nav a, nav button { margin-left: 16px; text-decoration:none; color:#555; font-weight:bold; background:none; border:none; cursor:pointer; font-size:1rem; }
+    body { font-family:'Helvetica Neue',system-ui,-apple-system,Segoe UI,Roboto,'Hiragino Kaku Gothic ProN','Noto Sans JP','Yu Gothic',sans-serif;background:#f9f9fb;margin:0;color:#333; }
+    header { background:#fff;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #ddd; }
+    header h1 { margin:0;font-size:1.2rem;color:#c81d5f; }
+    nav a, nav button { margin-left:16px;text-decoration:none;color:#555;font-weight:bold;background:none;border:none;cursor:pointer;font-size:1rem; }
     nav a:hover, nav button:hover { color:#c81d5f; }
-    .wrap { max-width: 880px; margin: 32px auto; padding: 0 16px; }
-    .card { background:#fff; padding:20px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.06); }
+    .wrap { max-width:880px;margin:32px auto;padding:0 16px; }
+    .card { background:#fff;padding:20px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.06); }
     h2 { margin:0 0 12px; }
-    .grid { display:grid; gap:16px; grid-template-columns: 1fr; }
-    .actions { margin-top:18px; display:flex; gap:12px; flex-wrap:wrap; }
-    .btn { background:#c81d5f; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:bold; text-decoration:none; display:inline-block; }
+    .grid { display:grid;gap:16px;grid-template-columns:1fr; }
+    .actions { margin-top:18px;display:flex;gap:12px;flex-wrap:wrap; }
+    .btn { background:#c81d5f;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:bold;text-decoration:none;display:inline-block; }
     .btn:hover { background:#a9134a; }
     .muted { color:#666; }
     dt { font-weight:bold; }
-    dd { margin: 0 0 8px 0; }
+    dd { margin:0 0 8px 0; }
   </style>
 </head>
 <body>
@@ -38,57 +38,27 @@
         <h2 id="welcome">ようこそ！</h2>
         <p class="muted">ここからマイリスト管理やコレクションの確認ができます。</p>
       </div>
-
       <div>
         <h3>プロフィール</h3>
         <dl>
-          <dt>ニックネーム</dt>
-          <dd id="profile-name">-</dd>
-          <dt>メールアドレス</dt>
-          <dd id="profile-email">-</dd>
+          <dt>ニックネーム</dt><dd id="profile-name">-</dd>
+          <dt>メールアドレス</dt><dd id="profile-email">-</dd>
         </dl>
       </div>
     </section>
   </main>
 
-  <!-- Firebase 認証チェック & ログアウト処理 -->
+  <script type="module" src="firebase.js"></script>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+    const auth = window.firebaseAuth;
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyD8fQFqmRA4BeR4ApXWk9RPxlP8uizFquk",
-      authDomain: "sakurazaka-photo-trade.firebaseapp.com",
-      projectId: "sakurazaka-photo-trade",
-      storageBucket: "sakurazaka-photo-trade.firebasestorage.app",
-      messagingSenderId: "83292956625",
-      appId: "1:83292956625:web:4f102558cdc1809c3162f0",
-      measurementId: "G-1ZS5CZ6364"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // ログイン必須チェック
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "login.html"; // 未ログインならリダイレクト
-      } else {
-        document.getElementById("welcome").textContent = `${user.email} さん、ようこそ！`;
-        document.getElementById("profile-email").textContent = user.email;
-        document.getElementById("profile-name").textContent = user.displayName || "(ニックネーム未設定)";
-      }
+    window.requireLogin((user) => {
+      document.getElementById("welcome").textContent = `${user.email} さん、ようこそ！`;
+      document.getElementById("profile-email").textContent = user.email;
+      document.getElementById("profile-name").textContent = user.displayName || "(ニックネーム未設定)";
     });
-
-    // ログアウト処理
-    window.doLogout = function() {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
-      }).catch((error) => {
-        console.error("ログアウトエラー:", error);
-        alert("ログアウトに失敗しました。");
-      });
-    }
   </script>
 </body>
 </html>
+

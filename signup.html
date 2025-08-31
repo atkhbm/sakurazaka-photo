@@ -5,75 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>新規登録 | 櫻坂46 生写真交換サイト</title>
   <style>
-    body { font-family: 'Helvetica Neue', sans-serif; background:#fff0f5; margin:0; padding:0; }
-    header { background:#fff; padding:16px; border-bottom:1px solid #ddd; text-align:center; }
-    header h1 { margin:0; font-size:1.4em; color:#c81d5f; }
-    main { max-width:400px; margin:40px auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
-    h2 { margin-top:0; text-align:center; }
-    label { display:block; margin-top:15px; font-weight:bold; }
-    input { width:100%; padding:10px; margin-top:5px; border:1px solid #ccc; border-radius:6px; font-size:1em; }
-    button { width:100%; margin-top:20px; padding:12px; background:#c81d5f; border:none; border-radius:6px; color:#fff; font-size:1em; cursor:pointer; font-weight:bold; }
+    body { font-family:'Helvetica Neue',sans-serif;background:#fff0f5;margin:0;padding:0; }
+    header { background:#fff;padding:16px;border-bottom:1px solid #ddd;text-align:center; }
+    header h1 { margin:0;font-size:1.4em;color:#c81d5f; }
+    main { max-width:400px;margin:40px auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+    h2 { margin-top:0;text-align:center; }
+    label { display:block;margin-top:15px;font-weight:bold; }
+    input { width:100%;padding:10px;margin-top:5px;border:1px solid #ccc;border-radius:6px;font-size:1em; }
+    button { width:100%;margin-top:20px;padding:12px;background:#c81d5f;border:none;border-radius:6px;color:#fff;font-size:1em;cursor:pointer;font-weight:bold; }
     button:hover { background:#a9134a; }
-    .msg { margin-top:15px; text-align:center; font-size:0.9em; color:#c81d5f; }
-    .link { text-align:center; margin-top:20px; }
-    .link a { color:#c81d5f; font-weight:bold; text-decoration:none; }
+    .msg { margin-top:15px;text-align:center;font-size:0.9em;color:#c81d5f; }
+    .link { text-align:center;margin-top:20px; }
+    .link a { color:#c81d5f;font-weight:bold;text-decoration:none; }
     .link a:hover { text-decoration:underline; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>櫻坂46 生写真交換サイト</h1>
-  </header>
-
+  <header><h1>櫻坂46 生写真交換サイト</h1></header>
   <main>
     <h2>新規登録</h2>
     <form id="signup-form">
       <label for="displayName">ニックネーム</label>
       <input type="text" id="displayName" required>
-
       <label for="email">メールアドレス</label>
       <input type="email" id="email" required>
-
       <label for="password">パスワード</label>
       <input type="password" id="password" required minlength="8">
-
       <button type="submit">登録する</button>
     </form>
     <div class="msg" id="msg"></div>
-
-    <div class="link">
-      すでにアカウントをお持ちの方は <a href="login.html">ログイン</a>
-    </div>
+    <div class="link">すでにアカウントをお持ちの方は <a href="login.html">ログイン</a></div>
   </main>
 
-  <!-- Firebase SDK 読み込み（index.html に書いた config と共通） -->
+  <script type="module" src="firebase.js"></script>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
-
-    // Firebase 設定
-    const firebaseConfig = {
-      apiKey: "AIzaSyD8fQFqmRA4BeR4ApXWk9RPxlP8uizFquk",
-      authDomain: "sakurazaka-photo-trade.firebaseapp.com",
-      projectId: "sakurazaka-photo-trade",
-      storageBucket: "sakurazaka-photo-trade.firebasestorage.app",
-      messagingSenderId: "83292956625",
-      appId: "1:83292956625:web:4f102558cdc1809c3162f0",
-      measurementId: "G-1ZS5CZ6364"
-    };
-
-    // Firebase 初期化
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // フォーム送信処理
+    const auth = window.firebaseAuth;
     const form = document.getElementById("signup-form");
     const msg = document.getElementById("msg");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       msg.textContent = "処理中です…";
-
       const displayName = document.getElementById("displayName").value;
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
@@ -81,13 +54,8 @@
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName });
-        msg.textContent = "登録が完了しました。マイページに移動します。";
-
-        // 登録成功後 → マイページへ遷移
-        setTimeout(() => {
-          window.location.href = "mypage.html";
-        }, 1000);
-
+        msg.textContent = "登録完了！マイページに移動します。";
+        setTimeout(() => window.location.href = "mypage.html", 1000);
       } catch (error) {
         msg.textContent = "エラー: " + error.message;
       }
@@ -95,3 +63,5 @@
   </script>
 </body>
 </html>
+
+
