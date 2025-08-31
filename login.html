@@ -1,88 +1,87 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ログイン | 櫻坂46 生写真交換サイト</title>
   <style>
-    body { font-family: 'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', sans-serif; background:#f9f9fb; margin:0; color:#333; }
-    header { background:#fff; display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #ddd; }
-    header h1 { margin:0; font-size:1.2rem; color:#c81d5f; }
-    nav a { margin-left: 16px; text-decoration:none; color:#555; font-weight:bold; }
-    nav a:hover { color:#c81d5f; }
-    .wrap { max-width: 480px; margin: 32px auto; background:#fff; padding: 24px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.06); }
-    h2 { margin-top:0; color:#333; }
-    label { display:block; margin:12px 0 6px; font-weight:bold; }
-    input { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:16px; }
-    .actions { margin-top:18px; display:flex; gap:12px; flex-wrap:wrap; }
-    button, .link-btn { background:#c81d5f; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:bold; text-decoration:none; display:inline-block; }
-    button:hover, .link-btn:hover { background:#a9134a; }
-    .error { margin-top:12px; color:#c0392b; font-weight:bold; }
-    .sub { margin-top:12px; font-size:.9rem; color:#555; }
+    body { font-family: 'Helvetica Neue', sans-serif; background:#fff0f5; margin:0; padding:0; }
+    header { background:#fff; padding:16px; border-bottom:1px solid #ddd; text-align:center; }
+    header h1 { margin:0; font-size:1.4em; color:#c81d5f; }
+    main { max-width:400px; margin:40px auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+    h2 { margin-top:0; text-align:center; }
+    label { display:block; margin-top:15px; font-weight:bold; }
+    input { width:100%; padding:10px; margin-top:5px; border:1px solid #ccc; border-radius:6px; font-size:1em; }
+    button { width:100%; margin-top:20px; padding:12px; background:#c81d5f; border:none; border-radius:6px; color:#fff; font-size:1em; cursor:pointer; font-weight:bold; }
+    button:hover { background:#a9134a; }
+    .msg { margin-top:15px; text-align:center; font-size:0.9em; color:#c81d5f; }
+    .link { text-align:center; margin-top:20px; }
+    .link a { color:#c81d5f; font-weight:bold; text-decoration:none; }
+    .link a:hover { text-decoration:underline; }
   </style>
 </head>
 <body>
   <header>
     <h1>櫻坂46 生写真交換サイト</h1>
-    <nav data-auth-links></nav>
   </header>
 
-  <div class="wrap">
+  <main>
     <h2>ログイン</h2>
     <form id="login-form">
       <label for="email">メールアドレス</label>
-      <input id="email" type="email" required autocomplete="username" placeholder="you@example.com" />
+      <input type="email" id="email" required>
 
       <label for="password">パスワード</label>
-      <input id="password" type="password" required minlength="8" autocomplete="current-password" />
+      <input type="password" id="password" required>
 
-      <div class="actions">
-        <button type="submit">ログイン</button>
-        <a class="link-btn" href="signup.html">新規登録へ</a>
-      </div>
-
-      <div id="error" class="error" aria-live="polite"></div>
-      <p class="sub">ゲストで試す方は <a href="guest_home.html">こちら</a></p>
+      <button type="submit">ログイン</button>
     </form>
-  </div>
+    <div class="msg" id="msg"></div>
 
-  <!-- 認証ロジック -->
-  <script src="auth.js"></script>
-  <script>
-    // ヘッダー出し分け
-    if (typeof renderHeaderAuthLinks === "function") renderHeaderAuthLinks();
+    <div class="link">
+      アカウントをお持ちでない方は <a href="signup.html">新規登録</a>
+    </div>
+  </main>
 
-    // ?next= でログイン後の遷移先を上書き可能（例：login.html?next=guest_home.html）
-    function getNextPath(defaultPath = "mypage.html") {
-      const p = new URLSearchParams(location.search).get("next");
-      if (!p) return defaultPath;
-      if (/^\/[A-Za-z0-9/_\-.]+$/.test(p) || /^[A-Za-z0-9/_\-.]+$/.test(p)) return p;
-      return defaultPath;
-    }
+  <!-- Firebase SDK 読み込み -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+
+    // Firebase 設定（signup.html と同じ）
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8fQFqmRA4BeR4ApXWk9RPxlP8uizFquk",
+      authDomain: "sakurazaka-photo-trade.firebaseapp.com",
+      projectId: "sakurazaka-photo-trade",
+      storageBucket: "sakurazaka-photo-trade.firebasestorage.app",
+      messagingSenderId: "83292956625",
+      appId: "1:83292956625:web:4f102558cdc1809c3162f0",
+      measurementId: "G-1ZS5CZ6364"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
     const form = document.getElementById("login-form");
-    const emailEl = document.getElementById("email");
-    const pwEl = document.getElementById("password");
-    const errEl = document.getElementById("error");
-    let submitting = false;
+    const msg = document.getElementById("msg");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (submitting) return;
-      submitting = true;
-      errEl.textContent = "";
+      msg.textContent = "ログイン処理中です…";
 
-      const btn = form.querySelector('button[type="submit"]');
-      const original = btn.textContent;
-      btn.disabled = true; btn.textContent = "ログイン中…";
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
       try {
-        await signIn({ email: emailEl.value.trim(), password: pwEl.value });
-        location.href = getNextPath("mypage.html");
-      } catch (err) {
-        errEl.textContent = err?.message || "ログインに失敗しました。";
-        btn.disabled = false; btn.textContent = original;
-        submitting = false;
+        await signInWithEmailAndPassword(auth, email, password);
+        msg.textContent = "ログインに成功しました。マイページへ移動します。";
+
+        setTimeout(() => {
+          window.location.href = "mypage.html";
+        }, 1000);
+
+      } catch (error) {
+        msg.textContent = "エラー: " + error.message;
       }
     });
   </script>

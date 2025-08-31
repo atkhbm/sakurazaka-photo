@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>マッチング | 櫻坂46 生写真交換サイト（非公式）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { font-family: 'Helvetica Neue', sans-serif; background:#f9f9fb; margin:0; color:#333; }
+    header { background:#fff; display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #ddd; }
+    header h1 { margin:0; font-size:1.2rem; color:#c81d5f; }
+    nav a { margin-left: 16px; text-decoration:none; color:#555; font-weight:bold; }
+    nav a:hover { color:#c81d5f; }
+    .wrap { max-width: 980px; margin: 24px auto; padding: 0 16px; }
+    .card { background:#fff; padding:20px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.06); margin-bottom:16px; }
+    .grid { display:grid; gap:16px; grid-template-columns: 1fr; }
+    h2 { margin:0 0 12px; color:#c81d5f; }
+    .muted { color:#666; }
+
+    .btn { background:#c81d5f; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:bold; text-decoration:none; display:inline-block; }
+    .btn:hover { background:#a9134a; }
+    .btn-outline { background:#fff; color:#c81d5f; border:2px solid #c81d5f; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:bold; }
+    .btn-outline:hover { background:#ffe3ec; }
+
+    textarea { width:100%; min-height: 120px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .list { margin: 8px 0 0; padding:0; list-style:none; }
+    .list li { padding:8px 10px; border:1px solid #eee; border-radius:8px; background:#fff; margin-bottom:8px; }
+    .col2 { display:grid; gap:16px; grid-template-columns: 1fr; }
+    @media (min-width: 800px) { .col2 { grid-template-columns: 1fr 1fr; } }
+
+    /* 戻るボタン */
+    .back-btn { display:inline-block; padding:10px 20px; background:#c81d5f; color:#fff; text-decoration:none; border-radius: 30px; font-weight:bold; }
+    .back-btn:hover { background:#a9134a; }
+    .center { text-align:center; }
+
+    .small { font-size:.9em; }
+    .badge { display:inline-block; padding:2px 8px; border-radius: 999px; background:#fff0f5; color:#c81d5f; border:1px solid #f7c6d9; margin-left:6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>マッチング</h1>
+    <nav data-auth-links>
+      <a href="mypage.html">マイページ</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <!-- 自分のデータ確認 & 共有 -->
+    <section class="card grid">
+      <div>
+        <h2>① 自分のリストを共有</h2>
+        <p class="muted small">自分のブラウザに保存されている「欲しい / 提供 / 所持」をJSONにまとめます。XやInstagramのDMで相手に送ってください。</p>
+        <div class="actions" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 12px;">
+          <button class="btn" onclick="exportMyData()">自分のリストを生成</button>
+          <button class="btn-outline" onclick="copyExport()">コピー</button>
+          <button class="btn-outline" onclick="downloadExport()">JSONで保存</button>
+        </div>
+        <textarea id="myExport" placeholder="ここに自分のJSONが出力されます" readonly></textarea>
+        <p class="small muted" id="myProfileHint"></p>
+      </div>
+
+      <div>
+        <h2>② 相手のリストを貼り付け</h2>
+        <p class="muted small">相手から受け取ったJSONをここに貼り付けてください。ファイル読み込みでもOKです。</p>
+        <div class="actions" style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 12px;">
+          <input type="file" id="importFile" accept="application/json" />
+          <button class="btn" onclick="runMatching()">マッチングを実行</button>
+        </div>
+        <textarea id="otherImport" placeholder="ここに相手のJSONを貼り付け"></textarea>
+      </div>
+    </section>
+
+    <!-- 結果 -->
+    <section class="card">
+      <h2>③ マッチング結果</h2>
+      <div class="col2">
+        <div>
+          <h3>あなたが欲しい ⇄ 相手が提供<span class="badge" id="c12">0件</span></h3>
+          <ul class="list" id="list12"></ul>
+        </div>
+        <div>
+          <h3>あなたが提供 ⇄ 相手が欲しい<span class="badge" id="c21">0件</span></h3>
+          <ul class="list" id="list21"></ul>
+        </div>
+      </div>
+      <p class="small muted" id="contactHint"></p>
+    </section>
+
+    <div class="center" style="margin:28px 0;">
+      <a href="mypage.html" class="back-btn">マイページに戻る</a>
+    </div>
+  </main>
+
+  <script>
+    // === 既存ローカル設計に合わせたキー ===
+    const LS_WANT = "want";
+    const LS_PROVIDE = "provide";
+    const LS_OWN = "own";
+    const LS_USERS = "app_users";
+    const LS_SESSION = "app_session";
+
+    const enc = (s) => encodeURIComponent(s ?? "");
+    const dec = (s) => decodeURIComponent(s ?? "");
+
+    // 自分のプロフィール（ニックネーム/メール/SNS可視性 等）を取得
+    function getCurrentUserProfile() {
+      try {
+        const session = JSON.parse(localStorage.getItem(LS_SESSION) || "null");
+        if (!session) return null;
+        const users = JSON.parse(localStorage.getItem(LS_USERS) || "[]");
+        const me = users.find(u => (u.email||"").toLowerCase() === (session.email||"").toLowerCase());
+        return me || null;
+      } catch {
+        return null;
+      }
+    }
+
+    function exportMyData() {
+      const want = JSON.parse(localStorage.getItem(LS_WANT) || "[]");
+      const provide = JSON.parse(localStorage.getItem(LS_PROVIDE) || "[]");
+      const own = JSON.parse(localStorage.getItem(LS_OWN) || "[]");
+      const me = getCurrentUserProfile();
+
+      const payload = {
+        // 表示用プロフィール（必要最低限）
+        profile: {
+          displayName: me?.displayName || "",
+          email: me?.email || "",
+          sns: {
+            x: me?.sns?.x || null,
+            instagram: me?.sns?.instagram || null,
+          }
+        },
+        // エンコード済みID配列（過去の実装と互換）
+        lists: {
+          want, provide, own
+        },
+        // バージョン（将来の互換用）
+        meta: { v: 1, exportedAt: new Date().toISOString() }
+      };
+
+      const text = JSON.stringify(payload, null, 2);
+      document.getElementById("myExport").value = text;
+
+      const hint = [];
+      if (payload.profile.displayName) hint.push(`ニックネーム：${payload.profile.displayName}`);
+      if (payload.profile.sns?.x?.id) hint.push(`X：${payload.profile.sns.x.id}`);
+      if (payload.profile.sns?.instagram?.id) hint.push(`Instagram：${payload.profile.sns.instagram.id}`);
+      document.getElementById("myProfileHint").textContent = hint.length ? `共有プロフィール → ${hint.join(" / ")}` : "";
+    }
+
+    function copyExport() {
+      const ta = document.getElementById("myExport");
+      if (!ta.value) { alert("先に「自分のリストを生成」を押してください。"); return; }
+      ta.select(); document.execCommand("copy");
+      alert("コピーしました。相手に貼り付けて送ってください。");
+    }
+
+    function downloadExport() {
+      const ta = document.getElementById("myExport");
+      if (!ta.value) { alert("先に「自分のリストを生成」を押してください。"); return; }
+      const blob = new Blob([ta.value], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "my_list_export.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // ファイル読み込み → otherImport に反映
+    document.getElementById("importFile").addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        document.getElementById("otherImport").value = reader.result;
+      };
+      reader.readAsText(file, "utf-8");
+    });
+
+    function parseOther() {
+      const txt = document.getElementById("otherImport").value.trim();
+      if (!txt) { alert("相手のJSONを貼り付けてください。"); return null; }
+      try {
+        const obj = JSON.parse(txt);
+        // 最小限のバリデーション
+        if (!obj.lists || !Array.isArray(obj.lists.want) || !Array.isArray(obj.lists.provide)) {
+          alert("JSON形式が想定と異なります。lists.want / lists.provide が必要です。");
+          return null;
+        }
+        return obj;
+      } catch {
+        alert("JSONの解析に失敗しました。");
+        return null;
+      }
+    }
+
+    function runMatching() {
+      const other = parseOther();
+      if (!other) return;
+
+      const myWant = new Set(JSON.parse(localStorage.getItem(LS_WANT) || "[]"));
+      const myProvide = new Set(JSON.parse(localStorage.getItem(LS_PROVIDE) || "[]"));
+
+      const theirProvide = new Set(other.lists.provide || []);
+      const theirWant = new Set(other.lists.want || []);
+
+      // 交差
+      const a = intersect(myWant, theirProvide);   // 自分が欲しい ∩ 相手が提供
+      const b = intersect(myProvide, theirWant);   // 自分が提供 ∩ 相手が欲しい
+
+      renderMatches("list12", "c12", a);
+      renderMatches("list21", "c21", b);
+
+      // 連絡ヒント
+      const p = other.profile || {};
+      const hints = [];
+      if (p.displayName) hints.push(`相手：${p.displayName}`);
+      if (p?.sns?.x?.id) hints.push(`X：@${p.sns.x.id}`);
+      if (p?.sns?.instagram?.id) hints.push(`Instagram：@${p.sns.instagram.id}`);
+      document.getElementById("contactHint").textContent = hints.length
+        ? `連絡先のヒント → ${hints.join(" / ")}`
+        : "連絡先は相手に確認してください。";
+    }
+
+    function intersect(setA, setB) {
+      const out = [];
+      for (const x of setA) if (setB.has(x)) out.push(x);
+      return out;
+    }
+
+    // 表示用：エンコード済みID "member_item_pose" を分解して可読に
+    function prettyId(encoded) {
+      const raw = dec(encoded);
+      // 期待形式：member_item_pose
+      const parts = raw.split("_");
+      const [member, item, pose] = [parts[0]||"", parts[1]||"", parts.slice(2).join("_")];
+      return { member, item, pose };
+    }
+
+    function renderMatches(listId, countId, arr) {
+      const ul = document.getElementById(listId);
+      ul.innerHTML = "";
+      document.getElementById(countId).textContent = `${arr.length}件`;
+      if (arr.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "一致はありませんでした。";
+        ul.appendChild(li);
+        return;
+      }
+      arr.forEach(id => {
+        const { member, item, pose } = prettyId(id);
+        const li = document.createElement("li");
+        li.textContent = `${member} / ${item} / ${pose}`;
+        ul.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
