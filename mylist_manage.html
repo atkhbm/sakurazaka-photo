@@ -16,20 +16,7 @@
     tr:nth-child(even) { background-color: #fff5f8; }
     .actions { text-align: center; margin: 20px; }
     .actions button { padding: 10px 15px; margin: 0 10px; background-color: #ff69b4; color: white; border: none; border-radius: 5px; cursor: pointer; }
-
-    /* 戻るボタン用 */
-    .back-btn {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #c81d5f;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
-    }
-    .back-btn:hover {
-      background-color: #a8154a;
-    }
+    .back-btn { display: inline-block; padding: 10px 20px; background-color: #c81d5f; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -63,119 +50,142 @@
     <button onclick="resetData()">リセット</button>
   </div>
 
-  <!-- マイページに戻るボタン -->
   <div style="text-align:center; margin: 40px 0;">
     <a href="mypage.html" class="back-btn">マイページに戻る</a>
   </div>
 
-<script>
-const csvUrl = "https://raw.githubusercontent.com/atkhbm/sakurazaka-photo/refs/heads/main/sakurazaka_master_full.csv";
-let allData = [];
-let currentTab = "member";
-let selectedMember = "";
+  <!-- Firebase SDK 読み込み -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 
-const lists = {
-  want: new Set(JSON.parse(localStorage.getItem("want") || "[]")),
-  provide: new Set(JSON.parse(localStorage.getItem("provide") || "[]")),
-  own: new Set(JSON.parse(localStorage.getItem("own") || "[]")),
-};
-
-const tempChecked = {
-  want: new Set(),
-  provide: new Set(),
-  own: new Set(),
-};
-
-fetch(csvUrl)
-  .then(res => res.text())
-  .then(text => {
-    const rows = text.trim().split("\n").slice(1).map(line => {
-      return line.match(/(".*?"|[^",]+)(?=,|$)/g).map(cell => cell.replace(/^"|"$/g, ""));
-    });
-    allData = rows;
-    renderMemberTabs();
-    renderTable();
-  });
-
-function switchTab(tab, event) {
-  currentTab = tab;
-  selectedMember = "";
-  document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
-  event.target.classList.add("active");
-  renderTable();
-}
-
-function renderMemberTabs() {
-  const memberTabs = document.getElementById("member-tabs");
-  const members = [...new Set(allData.map(row => row[0]))];
-  memberTabs.innerHTML = "";
-  members.forEach(member => {
-    const btn = document.createElement("button");
-    btn.textContent = member;
-    btn.onclick = () => {
-      selectedMember = member;
-      renderTable();
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8fQFqmRA4BeR4ApXWk9RPxlP8uizFquk",
+      authDomain: "sakurazaka-photo-trade.firebaseapp.com",
+      projectId: "sakurazaka-photo-trade",
+      storageBucket: "sakurazaka-photo-trade.firebasestorage.app",
+      messagingSenderId: "83292956625",
+      appId: "1:83292956625:web:4f102558cdc1809c3162f0",
+      measurementId: "G-1ZS5CZ6364"
     };
-    memberTabs.appendChild(btn);
-  });
-}
 
-function renderTable() {
-  const tbody = document.querySelector("#list-table tbody");
-  tbody.innerHTML = "";
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  allData.forEach(([member, item, pose]) => {
-    const rawId = `${member}_${item}_${pose}`;
-    const id = encodeURIComponent(rawId);
+    let allData = [];
+    let currentTab = "member";
+    let selectedMember = "";
+    let lists = { want: new Set(), provide: new Set(), own: new Set() };
+    let uid = null;
 
-    const isChecked = (type) => lists[type].has(id) || tempChecked[type].has(id);
+    const csvUrl = "https://raw.githubusercontent.com/atkhbm/sakurazaka-photo/refs/heads/main/sakurazaka_master_full.csv";
 
-    if (currentTab === "member") {
-      if (!selectedMember || selectedMember !== member) return;
-      if (lists.want.has(id) || lists.provide.has(id) || lists.own.has(id)) return;
-    } else if (currentTab !== "member" && !lists[currentTab].has(id)) return;
+    // Firebaseログイン状態を確認
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.href = "login.html";
+        return;
+      }
+      uid = user.uid;
+      await loadUserData();
+      await loadCSV();
+    });
 
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${member}</td>
-      <td>${item}</td>
-      <td>${pose}</td>
-      <td><input type="checkbox" ${isChecked('want') ? "checked" : ""} onchange="handleToggle('want', '${id}', this.checked)"></td>
-      <td><input type="checkbox" ${isChecked('provide') ? "checked" : ""} onchange="handleToggle('provide', '${id}', this.checked)"></td>
-      <td><input type="checkbox" ${isChecked('own') ? "checked" : ""} onchange="handleToggle('own', '${id}', this.checked)"></td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
+    async function loadUserData() {
+      const docRef = doc(db, "users", uid);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const data = snap.data().lists || {};
+        lists.want = new Set(data.want || []);
+        lists.provide = new Set(data.provide || []);
+        lists.own = new Set(data.own || []);
+      }
+    }
 
-function handleToggle(type, id, checked) {
-  if (checked) {
-    tempChecked[type].add(id);
-  } else {
-    tempChecked[type].delete(id);
-  }
-}
+    async function saveData() {
+      const docRef = doc(db, "users", uid);
+      await setDoc(docRef, {
+        lists: {
+          want: Array.from(lists.want),
+          provide: Array.from(lists.provide),
+          own: Array.from(lists.own)
+        }
+      }, { merge: true });
+      alert("保存しました");
+      renderTable();
+    }
 
-function saveData() {
-  ['want', 'provide', 'own'].forEach(type => {
-    tempChecked[type].forEach(id => lists[type].add(id));
-    tempChecked[type].clear();
-    localStorage.setItem(type, JSON.stringify(Array.from(lists[type])));
-  });
-  alert("保存しました");
-  renderTable();
-}
+    async function resetData() {
+      if (!confirm("すべてのチェックをリセットしますか？")) return;
+      lists = { want: new Set(), provide: new Set(), own: new Set() };
+      await saveData();
+      renderTable();
+    }
 
-function resetData() {
-  if (!confirm("すべてのチェックをリセットしますか？")) return;
-  ['want', 'provide', 'own'].forEach(type => {
-    localStorage.removeItem(type);
-    lists[type].clear();
-    tempChecked[type].clear();
-  });
-  alert("リセットしました");
-  renderTable();
-}
-</script>
+    async function loadCSV() {
+      const res = await fetch(csvUrl);
+      const text = await res.text();
+      allData = text.trim().split("\n").slice(1).map(line => {
+        return line.match(/(".*?"|[^",]+)(?=,|$)/g).map(cell => cell.replace(/^"|"$/g, ""));
+      });
+      renderMemberTabs();
+      renderTable();
+    }
+
+    function switchTab(tab, event) {
+      currentTab = tab;
+      selectedMember = "";
+      document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+      renderTable();
+    }
+
+    function renderMemberTabs() {
+      const memberTabs = document.getElementById("member-tabs");
+      const members = [...new Set(allData.map(row => row[0]))];
+      memberTabs.innerHTML = "";
+      members.forEach(member => {
+        const btn = document.createElement("button");
+        btn.textContent = member;
+        btn.onclick = () => { selectedMember = member; renderTable(); };
+        memberTabs.appendChild(btn);
+      });
+    }
+
+    function renderTable() {
+      const tbody = document.querySelector("#list-table tbody");
+      tbody.innerHTML = "";
+
+      allData.forEach(([member, item, pose]) => {
+        const rawId = `${member}_${item}_${pose}`;
+        const id = encodeURIComponent(rawId);
+
+        const isChecked = (type) => lists[type].has(id);
+
+        if (currentTab === "member") {
+          if (!selectedMember || selectedMember !== member) return;
+          if (lists.want.has(id) || lists.provide.has(id) || lists.own.has(id)) return;
+        } else if (currentTab !== "member" && !lists[currentTab].has(id)) return;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${member}</td>
+          <td>${item}</td>
+          <td>${pose}</td>
+          <td><input type="checkbox" ${isChecked('want') ? "checked" : ""} onchange="handleToggle('want','${id}',this.checked)"></td>
+          <td><input type="checkbox" ${isChecked('provide') ? "checked" : ""} onchange="handleToggle('provide','${id}',this.checked)"></td>
+          <td><input type="checkbox" ${isChecked('own') ? "checked" : ""} onchange="handleToggle('own','${id}',this.checked)"></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.handleToggle = function(type, id, checked) {
+      if (checked) lists[type].add(id);
+      else lists[type].delete(id);
+    }
+  </script>
 </body>
 </html>

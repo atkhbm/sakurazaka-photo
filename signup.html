@@ -12,19 +12,37 @@
     main { max-width:400px; margin:40px auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
     h2 { margin-top:0; text-align:center; }
     label { display:block; margin-top:15px; font-weight:bold; }
-    input { width:100%; padding:10px; margin-top:5px; border:1px solid #ccc; border-radius:6px; font-size:1em; }
+    input { width:100%; padding:10px; margin-top:5px; border:1px solid #ccc; border-radius:6px; font-size:1em; box-sizing:border-box; }
     button { width:100%; margin-top:20px; padding:12px; background:#c81d5f; border:none; border-radius:6px; color:#fff; font-size:1em; cursor:pointer; font-weight:bold; }
     button:hover { background:#a9134a; }
     .msg { margin-top:15px; text-align:center; font-size:0.9em; color:#c81d5f; }
     .link { text-align:center; margin-top:20px; }
     .link a { color:#c81d5f; font-weight:bold; text-decoration:none; }
     .link a:hover { text-decoration:underline; }
-    /* パスワード入力 + アイコン */
-    .password-container { position:relative; }
-    .password-container input { padding-right:40px; }
-    .password-container i {
-      position:absolute; right:10px; top:50%; transform:translateY(-50%);
-      cursor:pointer; color:#666;
+
+    /* 入力欄の共通設定 */
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .input-wrapper input {
+      width: 100%;
+      padding: 10px 40px 10px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+    .input-wrapper .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1em;
+      color: #555;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -37,15 +55,19 @@
     <h2>新規登録</h2>
     <form id="signup-form">
       <label for="displayName">ニックネーム</label>
-      <input type="text" id="displayName" required>
+      <div class="input-wrapper">
+        <input type="text" id="displayName" required>
+      </div>
 
       <label for="email">メールアドレス</label>
-      <input type="email" id="email" required>
+      <div class="input-wrapper">
+        <input type="email" id="email" required>
+      </div>
 
       <label for="password">パスワード</label>
-      <div class="password-container">
+      <div class="input-wrapper">
         <input type="password" id="password" required minlength="8">
-        <i class="fa-solid fa-eye" id="togglePassword"></i>
+        <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
       </div>
 
       <button type="submit">登録する</button>
@@ -59,20 +81,11 @@
 
   <script type="module">
     import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+    import "./firebase.js";
 
     const auth = window.firebaseAuth;
     const form = document.getElementById("signup-form");
     const msg = document.getElementById("msg");
-
-    // パスワード表示切替
-    const togglePassword = document.getElementById("togglePassword");
-    const passwordInput = document.getElementById("password");
-    togglePassword.addEventListener("click", () => {
-      const isPassword = passwordInput.type === "password";
-      passwordInput.type = isPassword ? "text" : "password";
-      togglePassword.classList.toggle("fa-eye");
-      togglePassword.classList.toggle("fa-eye-slash");
-    });
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -80,7 +93,7 @@
 
       const displayName = document.getElementById("displayName").value;
       const email = document.getElementById("email").value;
-      const password = passwordInput.value;
+      const password = document.getElementById("password").value;
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -91,8 +104,19 @@
         msg.textContent = "エラー: " + error.message;
       }
     });
+
+    // パスワード表示切り替え
+    const togglePassword = document.getElementById("togglePassword");
+    const password = document.getElementById("password");
+    togglePassword.addEventListener("click", function () {
+      const type = password.getAttribute("type") === "password" ? "text" : "password";
+      password.setAttribute("type", type);
+      this.classList.toggle("fa-eye");
+      this.classList.toggle("fa-eye-slash");
+    });
   </script>
 </body>
 </html>
+
 
 
