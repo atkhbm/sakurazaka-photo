@@ -1,87 +1,27 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>マイリスト管理 | 櫻坂46交換サイト</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: 'Helvetica Neue', sans-serif; background-color: #fff0f5; margin: 0; padding: 20px; }
-    h1 { text-align: center; color: #c81d5f; }
-    .tabs { display: flex; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
-    .tabs button { padding: 10px 20px; margin: 5px; border: none; background-color: #f7c6d9; color: #333; border-radius: 5px; cursor: pointer; }
-    .tabs button.active { background-color: #c81d5f; color: white; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-    th { background-color: #f7c6d9; }
-    tr:nth-child(even) { background-color: #fff5f8; }
-    .actions { text-align: center; margin: 20px; }
-    .actions button { padding: 10px 15px; margin: 0 10px; background-color: #ff69b4; color: white; border: none; border-radius: 5px; cursor: pointer; }
-
-    /* 戻るボタン */
-    .back-btn {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #c81d5f;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
-    }
-    .back-btn:hover { background-color: #a8154a; }
-  </style>
-</head>
-<body>
-  <h1>マイリストを管理する</h1>
-
-  <div class="tabs" id="main-tabs">
-    <button data-tab="member" class="active">メンバー一覧</button>
-    <button data-tab="want">欲しい</button>
-    <button data-tab="provide">提供</button>
-    <button data-tab="own">所持</button>
-  </div>
-
-  <div class="tabs" id="member-tabs"></div>
-
-  <table id="list-table">
-    <thead>
-      <tr>
-        <th>メンバー名</th>
-        <th>品名</th>
-        <th>ポーズ</th>
-        <th>欲しい</th>
-        <th>提供</th>
-        <th>所持</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <div class="actions">
-    <button id="save-btn">保存</button>
-    <button id="reset-btn">リセット</button>
-  </div>
-
-  <!-- マイページに戻る -->
-  <div style="text-align:center; margin: 40px 0;">
-    <a href="mypage.html" class="back-btn">マイページに戻る</a>
-  </div>
-
 <script type="module">
-  const csvUrl = "https://raw.githubusercontent.com/atkhbm/sakurazaka-photo/refs/heads/main/sakurazaka_master_full.csv";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+  import "./firebase.js";
+
+  const auth = window.firebaseAuth;
+
   let allData = [];
   let currentTab = "member";
   let selectedMember = "";
 
-  const lists = {
-    want: new Set(JSON.parse(localStorage.getItem("want") || "[]")),
-    provide: new Set(JSON.parse(localStorage.getItem("provide") || "[]")),
-    own: new Set(JSON.parse(localStorage.getItem("own") || "[]")),
-  };
-
+  const lists = { want: new Set(), provide: new Set(), own: new Set() };
   const tempChecked = { want: new Set(), provide: new Set(), own: new Set() };
 
+  // Firestoreから読込
+  async function loadLists(userId) {
+    const data = await window.loadMyList(userId);
+    lists.want = new Set(data.want || []);
+    lists.provide = new Set(data.provide || []);
+    lists.own = new Set(data.own || []);
+    renderTable();
+  }
+
   // CSV読込
-  fetch(csvUrl)
+  fetch("https://raw.githubusercontent.com/atkhbm/sakurazaka-photo/refs/heads/main/sakurazaka_master_full.csv")
     .then(res => res.text())
     .then(text => {
       const rows = text.trim().split("\n").slice(1).map(line => {
@@ -89,21 +29,18 @@
       });
       allData = rows;
       renderMemberTabs();
-      renderTable();
+
+      // ログインしているユーザーのデータを読込
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          loadLists(user.uid);
+        } else {
+          location.href = "login.html";
+        }
+      });
     });
 
-  // タブ切り替え
-  document.getElementById("main-tabs").addEventListener("click", (e) => {
-    if (e.target.tagName === "BUTTON") {
-      document.querySelectorAll("#main-tabs button").forEach(btn => btn.classList.remove("active"));
-      e.target.classList.add("active");
-      currentTab = e.target.dataset.tab;
-      selectedMember = "";
-      renderTable();
-    }
-  });
-
-  // メンバー一覧タブ
+  // メンバータブ作成
   function renderMemberTabs() {
     const memberTabs = document.getElementById("member-tabs");
     const members = [...new Set(allData.map(row => row[0]))];
@@ -119,7 +56,7 @@
     });
   }
 
-  // テーブル描画
+  // 表描画
   function renderTable() {
     const tbody = document.querySelector("#list-table tbody");
     tbody.innerHTML = "";
@@ -159,28 +96,52 @@
     });
   }
 
-  // 保存
-  document.getElementById("save-btn").addEventListener("click", () => {
+  // 保存（Firestoreへ）
+  document.getElementById("save-btn").addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) { alert("ログインが必要です"); return; }
+
     ['want', 'provide', 'own'].forEach(type => {
       tempChecked[type].forEach(id => lists[type].add(id));
       tempChecked[type].clear();
-      localStorage.setItem(type, JSON.stringify(Array.from(lists[type])));
     });
-    alert("保存しました");
+
+    await window.saveMyList(user.uid, {
+      want: Array.from(lists.want),
+      provide: Array.from(lists.provide),
+      own: Array.from(lists.own)
+    });
+
+    alert("Firestoreに保存しました！");
     renderTable();
   });
 
   // リセット
-  document.getElementById("reset-btn").addEventListener("click", () => {
+  document.getElementById("reset-btn").addEventListener("click", async () => {
     if (!confirm("すべてのチェックをリセットしますか？")) return;
-    ['want', 'provide', 'own'].forEach(type => {
-      localStorage.removeItem(type);
-      lists[type].clear();
-      tempChecked[type].clear();
+    const user = auth.currentUser;
+    if (!user) { return; }
+
+    lists.want.clear();
+    lists.provide.clear();
+    lists.own.clear();
+
+    await window.saveMyList(user.uid, {
+      want: [], provide: [], own: []
     });
-    alert("リセットしました");
+
+    alert("リセットしました（Firestore）");
     renderTable();
   });
+
+  // メインタブ切り替え
+  document.getElementById("main-tabs").addEventListener("click", (e) => {
+    if (e.target.tagName === "BUTTON") {
+      document.querySelectorAll("#main-tabs button").forEach(btn => btn.classList.remove("active"));
+      e.target.classList.add("active");
+      currentTab = e.target.dataset.tab;
+      selectedMember = "";
+      renderTable();
+    }
+  });
 </script>
-</body>
-</html>
