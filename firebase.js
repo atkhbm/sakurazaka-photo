@@ -3,12 +3,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/fireba
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 import { getFirestore, setDoc, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 
-// Firebase設定（Firebaseコンソールの「プロジェクト設定」からコピーした値を使う）
+// Firebase設定（CDNコードを反映済み）
 const firebaseConfig = {
-  apiKey: "AIzaSyD8fQFmR4dBeRApXWk9RPxIP8uiZFquk",
+  apiKey: "AIzaSyD8fQFqmRA4BeR4ApXWk9RPxlP8uizFquk",
   authDomain: "sakurazaka-photo-trade.firebaseapp.com",
   projectId: "sakurazaka-photo-trade",
-  storageBucket: "sakurazaka-photo-trade.appspot.com",  // ← 修正ポイント！
+  storageBucket: "sakurazaka-photo-trade.appspot.com", // ← 修正ポイント
   messagingSenderId: "83292956625",
   appId: "1:83292956625:web:4f102558cdc1809c3162f0",
   measurementId: "G-1ZS5CZ6364"
@@ -70,3 +70,4 @@ window.loadMyList = async function(userId) {
     return { want: [], provide: [], own: [] };
   }
 };
+
