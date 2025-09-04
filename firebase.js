@@ -3,12 +3,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/fireba
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 import { getFirestore, setDoc, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 
-// Firebase設定
+// Firebase設定（Firebaseコンソールの「プロジェクト設定」からコピーした値を使う）
 const firebaseConfig = {
   apiKey: "AIzaSyD8fQFmR4dBeRApXWk9RPxIP8uiZFquk",
   authDomain: "sakurazaka-photo-trade.firebaseapp.com",
   projectId: "sakurazaka-photo-trade",
-  storageBucket: "sakurazaka-photo-trade.firebasestorage.app",
+  storageBucket: "sakurazaka-photo-trade.appspot.com",  // ← 修正ポイント！
   messagingSenderId: "83292956625",
   appId: "1:83292956625:web:4f102558cdc1809c3162f0",
   measurementId: "G-1ZS5CZ6364"
