@@ -22,7 +22,7 @@
   <div id="member-tabs"></div>
 
   <!-- 一覧テーブル -->
-  <table id="list-table" border="1">
+  <table id="list-table" class="styled-table">
     <thead>
       <tr>
         <th>メンバー</th>
@@ -38,32 +38,15 @@
 
   <!-- ボタン -->
   <div style="margin-top:20px;">
-    <button id="save-btn">保存</button>
-    <button id="reset-btn">リセット</button>
+    <button id="save-btn" class="primary-btn">保存</button>
+    <button id="reset-btn" class="secondary-btn">リセット</button>
+    <a href="mypage.html" class="back-btn">戻る</a>
   </div>
 
   <!-- Firebase & メイン処理 -->
   <script type="module" src="firebase.js"></script>
   <script type="module" src="js/mylist_manage.js"></script>
 </body>
-<table id="list-table" class="styled-table">
-  <thead>
-    <tr>
-      <th>メンバー</th>
-      <th>品名</th>
-      <th>ポーズ</th>
-      <th>欲しい</th>
-      <th>提供</th>
-      <th>所持</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<div style="margin-top:20px;">
-  <button id="save-btn" class="primary-btn">保存</button>
-  <button id="reset-btn" class="secondary-btn">リセット</button>
-</div>
-
 </html>
+
 
