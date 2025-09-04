@@ -12,6 +12,7 @@
 .back-btn:hover {
   background: #a9134a;
 }
+
 /* テーブル全体 */
 .styled-table {
   width: 100%;
@@ -25,13 +26,36 @@
 .styled-table td {
   border: 1px solid #ddd;
   padding: 8px;
-  text-align: center;
+  text-align: center; /* 中央揃え */
 }
 
 .styled-table th {
   background-color: #ffb6c1; /* 濃いめピンク */
   color: #333;
   font-weight: bold;
+}
+
+/* メインタブ中央揃え */
+#main-tabs {
+  text-align: center;
+  margin: 20px 0;
+}
+#main-tabs button {
+  padding: 8px 16px;
+  margin: 5px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* メンバータブ中央揃え */
+#member-tabs {
+  text-align: center;
+  margin: 15px 0;
+}
+#member-tabs button {
+  margin: 3px;
 }
 
 /* ボタンデザイン */
