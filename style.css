@@ -12,3 +12,54 @@
 .back-btn:hover {
   background: #a9134a;
 }
+/* テーブル全体 */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff0f5; /* 薄いピンク背景 */
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+.styled-table th,
+.styled-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.styled-table th {
+  background-color: #ffb6c1; /* 濃いめピンク */
+  color: #333;
+  font-weight: bold;
+}
+
+/* ボタンデザイン */
+button {
+  padding: 8px 16px;
+  margin: 5px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* 保存ボタン */
+.primary-btn {
+  background-color: #ff69b4; /* 鮮やかなピンク */
+  color: white;
+  transition: background-color 0.3s;
+}
+.primary-btn:hover {
+  background-color: #ff1493; /* 濃いピンク */
+}
+
+/* リセットボタン */
+.secondary-btn {
+  background-color: #d3d3d3; /* グレー */
+  color: black;
+  transition: background-color 0.3s;
+}
+.secondary-btn:hover {
+  background-color: #a9a9a9; /* 濃いグレー */
+}
