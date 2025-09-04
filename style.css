@@ -58,7 +58,7 @@
   margin: 3px;
 }
 
-/* ボタンデザイン */
+/* ボタン共通デザイン */
 button {
   padding: 8px 16px;
   margin: 5px;
@@ -86,4 +86,10 @@ button {
 }
 .secondary-btn:hover {
   background-color: #a9a9a9; /* 濃いグレー */
+}
+
+/* 下部ボタンエリア中央揃え */
+.button-area {
+  text-align: center;
+  margin-top: 20px;
 }
