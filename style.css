@@ -37,14 +37,12 @@
 
 /* メインタブ中央揃え */
 #main-tabs {
-  display: flex;           /* 横並び */
-  justify-content: center; /* 中央寄せ */
-  gap: 10px;               /* ボタン間隔 */
+  text-align: center;
   margin: 20px 0;
 }
-
 #main-tabs button {
   padding: 8px 16px;
+  margin: 5px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
@@ -53,27 +51,14 @@
 
 /* メンバータブ中央揃え */
 #member-tabs {
-  display: flex;           /* 横並び */
-  justify-content: center; /* 中央寄せ */
-  flex-wrap: wrap;         /* 複数行対応 */
-  gap: 8px;
+  text-align: center;
   margin: 15px 0;
 }
-
 #member-tabs button {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
-  background-color: #f8cce2; /* 薄いピンク */
-  transition: background-color 0.3s;
-}
-#member-tabs button:hover {
-  background-color: #f497b6; /* 濃いピンク */
+  margin: 3px;
 }
 
-/* ボタンデザイン */
+/* ボタン共通デザイン */
 button {
   padding: 8px 16px;
   margin: 5px;
@@ -101,4 +86,10 @@ button {
 }
 .secondary-btn:hover {
   background-color: #a9a9a9; /* 濃いグレー */
+}
+
+/* 下部ボタンエリア中央揃え */
+.button-area {
+  text-align: center;
+  margin-top: 20px;
 }
