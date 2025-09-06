@@ -10,12 +10,19 @@
     <h1>マイリスト管理</h1>
   </header>
 
-  <!-- タブ切り替え -->
+  <!-- メインタブ -->
   <div id="main-tabs">
     <button data-tab="member" class="active">メンバー一覧</button>
     <button data-tab="want">欲しい</button>
     <button data-tab="provide">提供</button>
     <button data-tab="own">所持</button>
+  </div>
+
+  <!-- 期別タブ -->
+  <div id="generation-tabs" style="display:none; text-align:center; margin:10px 0;">
+    <button data-gen="2nd">二期生</button>
+    <button data-gen="3rd">三期生</button>
+    <button data-gen="4th">四期生</button>
   </div>
 
   <!-- メンバータブ -->
@@ -36,11 +43,10 @@
     <tbody></tbody>
   </table>
 
-  <!-- 下部ボタン -->
-  <div class="button-area">
+  <!-- ボタン -->
+  <div class="button-group">
     <button id="save-btn" class="primary-btn">保存</button>
     <button id="reset-btn" class="secondary-btn">リセット</button>
-    <a href="index.html" class="back-btn">戻る</a>
   </div>
 
   <!-- Firebase & メイン処理 -->
@@ -48,6 +54,3 @@
   <script type="module" src="js/mylist_manage.js"></script>
 </body>
 </html>
-
-
-
