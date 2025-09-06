@@ -3,14 +3,25 @@ import "../firebase.js";
 
 const auth = window.firebaseAuth;
 
-let allData = [];
+let allData = { "2nd": [], "3rd": [], "4th": [] };
 let currentTab = "member";
+let currentGen = "2nd";
 let selectedMember = "";
 
 const lists = { want: new Set(), provide: new Set(), own: new Set() };
 const tempChecked = { want: new Set(), provide: new Set(), own: new Set() };
 
-// Firestoreから読込
+// CSV読み込み関数
+async function loadCSV(gen, url) {
+  const res = await fetch(url);
+  const text = await res.text();
+  const rows = text.trim().split("\n").slice(1).map(line =>
+    line.match(/(".*?"|[^",]+)(?=,|$)/g).map(cell => cell.replace(/^"|"$/g, ""))
+  );
+  allData[gen] = rows;
+}
+
+// Firestore読込
 async function loadLists(userId) {
   const data = await window.loadMyList(userId);
   lists.want = new Set(data.want || []);
@@ -19,29 +30,29 @@ async function loadLists(userId) {
   renderTable();
 }
 
-// CSV読込
-fetch("https://raw.githubusercontent.com/atkhbm/sakurazaka-photo/refs/heads/main/sakurazaka_master_full.csv")
-  .then(res => res.text())
-  .then(text => {
-    const rows = text.trim().split("\n").slice(1).map(line => {
-      return line.match(/(".*?"|[^",]+)(?=,|$)/g).map(cell => cell.replace(/^"|"$/g, ""));
-    });
-    allData = rows;
-    renderMemberTabs();
+// 初期処理
+Promise.all([
+  loadCSV("2nd", "sakurazaka_2nd_gen.csv"),
+  loadCSV("3rd", "sakurazaka_3rd_gen.csv"),
+  loadCSV("4th", "sakurazaka_4th_gen.csv"),
+]).then(() => {
+  document.getElementById("generation-tabs").style.display = "block";
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        loadLists(user.uid);
-      } else {
-        location.href = "login.html";
-      }
-    });
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loadLists(user.uid);
+    } else {
+      location.href = "login.html";
+    }
   });
+
+  renderMemberTabs();
+});
 
 // メンバータブ作成
 function renderMemberTabs() {
   const memberTabs = document.getElementById("member-tabs");
-  const members = [...new Set(allData.map(row => row[0]))];
+  const members = [...new Set(allData[currentGen].map(row => row[0]))];
   memberTabs.innerHTML = "";
   members.forEach(member => {
     const btn = document.createElement("button");
@@ -57,10 +68,9 @@ function renderMemberTabs() {
 // 表描画
 function renderTable() {
   const tbody = document.querySelector("#list-table tbody");
-  if (!tbody) return;
   tbody.innerHTML = "";
 
-  allData.forEach(([member, item, pose]) => {
+  allData[currentGen].forEach(([member, item, pose]) => {
     const rawId = `${member}_${item}_${pose}`;
     const id = encodeURIComponent(rawId);
     const isChecked = (type) => lists[type].has(id) || tempChecked[type].has(id);
@@ -96,7 +106,7 @@ function renderTable() {
 }
 
 // 保存
-document.getElementById("save-btn")?.addEventListener("click", async () => {
+document.getElementById("save-btn").addEventListener("click", async () => {
   const user = auth.currentUser;
   if (!user) { alert("ログインが必要です"); return; }
 
@@ -116,7 +126,7 @@ document.getElementById("save-btn")?.addEventListener("click", async () => {
 });
 
 // リセット
-document.getElementById("reset-btn")?.addEventListener("click", async () => {
+document.getElementById("reset-btn").addEventListener("click", async () => {
   if (!confirm("すべてのチェックをリセットしますか？")) return;
   const user = auth.currentUser;
   if (!user) { return; }
@@ -125,18 +135,33 @@ document.getElementById("reset-btn")?.addEventListener("click", async () => {
   lists.provide.clear();
   lists.own.clear();
 
-  await window.saveMyList(user.uid, { want: [], provide: [], own: [] });
+  await window.saveMyList(user.uid, {
+    want: [], provide: [], own: []
+  });
+
   alert("リセットしました（Firestore）");
   renderTable();
 });
 
-// メインタブ切替
-document.getElementById("main-tabs")?.addEventListener("click", (e) => {
+// メインタブ切り替え
+document.getElementById("main-tabs").addEventListener("click", (e) => {
   if (e.target.tagName === "BUTTON") {
     document.querySelectorAll("#main-tabs button").forEach(btn => btn.classList.remove("active"));
     e.target.classList.add("active");
     currentTab = e.target.dataset.tab;
     selectedMember = "";
+    renderTable();
+  }
+});
+
+// 期別タブ切り替え
+document.getElementById("generation-tabs").addEventListener("click", (e) => {
+  if (e.target.tagName === "BUTTON") {
+    document.querySelectorAll("#generation-tabs button").forEach(btn => btn.classList.remove("active"));
+    e.target.classList.add("active");
+    currentGen = e.target.dataset.gen;
+    selectedMember = "";
+    renderMemberTabs();
     renderTable();
   }
 });
